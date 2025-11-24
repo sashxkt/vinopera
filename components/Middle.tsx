@@ -16,6 +16,7 @@ export default function Middle() {
 
   return (
     <motion.section
+      id="features"
       className="min-h-screen w-[90%] mx-auto rounded-[40px] relative overflow-hidden flex flex-col justify-center py-20 my-8"
       style={{
         ...{

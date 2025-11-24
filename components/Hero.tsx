@@ -47,6 +47,7 @@ export default function Hero() {
     clone.style.width = "100%";
     clone.style.height = "100%";
     clone.style.borderRadius = "40px"; // Ensure it matches the card
+    clone.style.justifyContent = "flex-start"; // Force top alignment for transition
     
     // 3. Prepare overlay
     if (overlayContentRef.current) {
@@ -59,7 +60,8 @@ export default function Hero() {
 
     // 5. Wait for wipe to cover screen (approx 800ms for full cover)
     setTimeout(() => {
-      targetEl.scrollIntoView({ behavior: "auto", block: "start" }); // Instant jump behind cover
+      const y = targetEl.getBoundingClientRect().top + window.scrollY - 50;
+      window.scrollTo({ top: y, behavior: "auto" });
       
       // 6. Fade out overlay
       // Add a small buffer (100ms) to ensure scroll is complete and frame is rendered

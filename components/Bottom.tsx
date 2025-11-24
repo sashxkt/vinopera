@@ -16,6 +16,7 @@ export default function Bottom() {
 
   return (
     <motion.section
+      id="explore"
       className="h-[90vh] w-[90%] mx-auto rounded-[40px] relative overflow-hidden flex flex-col my-8"
       style={{
         ...{
