@@ -3,298 +3,181 @@
 import { motion } from "framer-motion";
 import React from "react";
 
+const FloatingCursor = ({ name, color, x, y, initialX, initialY, delay }: { name: string, color: string, x: string, y: string, initialX: number, initialY: number, delay: number }) => (
+  <motion.div
+    className="absolute pointer-events-none z-50"
+    style={{ left: x, top: y }}
+    initial={{ opacity: 0, x: initialX, y: initialY }}
+    animate={{ opacity: 1, x: 0, y: 0 }}
+    transition={{ duration: 1, delay: delay, ease: "easeOut" }}
+  >
+    <motion.div
+      className="flex items-start gap-2"
+      animate={{ y: [0, -15, 0] }}
+      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: delay }}
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ color: color }}>
+        <path d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19169L11.7841 12.3673H5.65376Z" fill={color} stroke="white" />
+      </svg>
+      <span className="px-2 py-1 rounded-full text-xs font-bold text-white shadow-sm whitespace-nowrap" style={{ backgroundColor: color }}>
+        {name}
+      </span>
+    </motion.div>
+  </motion.div>
+);
+
 export default function Hero() {
-  const [transition, setTransition] = React.useState<{
-    isActive: boolean;
-    x: number;
-    y: number;
-  }>({ isActive: false, x: 0, y: 0 });
-  
-  const overlayContentRef = React.useRef<HTMLDivElement>(null);
-  const heroCardRef = React.useRef<HTMLElement>(null);
-
-  const floatAnimation = (delay = 0) => ({
-    y: [0, -10, 0],
-    rotate: [0, 0.7, -0.7, 0],
-    transition: {
-      duration: 12,
-      repeat: Infinity,
-      ease: "easeInOut",
-      delay: delay,
-    } as const,
-  });
-
-  const handleNavigation = (id: string, e: React.MouseEvent) => {
-    // Calculate coordinates relative to the Hero card
-    let x = e.clientX;
-    let y = e.clientY;
-
-    if (heroCardRef.current) {
-        const rect = heroCardRef.current.getBoundingClientRect();
-        x = e.clientX - rect.left;
-        y = e.clientY - rect.top;
-    }
-
-    // 1. Find target
-    const targetEl = document.getElementById(id);
-    if (!targetEl) return;
-
-    // 2. Clone target
-    const clone = targetEl.cloneNode(true) as HTMLElement;
-    clone.removeAttribute("id"); // Avoid duplicate IDs
-    clone.style.marginTop = "0"; // Reset margins for overlay context
-    clone.style.marginBottom = "0";
-    clone.style.width = "100%";
-    clone.style.height = "100%";
-    clone.style.borderRadius = "40px"; // Ensure it matches the card
-    clone.style.justifyContent = "flex-start"; // Force top alignment for transition
-    
-    // 3. Prepare overlay
-    if (overlayContentRef.current) {
-      overlayContentRef.current.innerHTML = "";
-      overlayContentRef.current.appendChild(clone);
-    }
-
-    // 4. Trigger animation
-    setTransition({ isActive: true, x, y });
-
-    // 5. Wait for wipe to cover screen (approx 800ms for full cover)
-    setTimeout(() => {
-      const y = targetEl.getBoundingClientRect().top + window.scrollY - 50;
-      window.scrollTo({ top: y, behavior: "auto" });
-      
-      // 6. Fade out overlay
-      // Add a small buffer (100ms) to ensure scroll is complete and frame is rendered
-      setTimeout(() => {
-        setTransition((prev) => ({ ...prev, isActive: false }));
-        // Cleanup after animation
-        setTimeout(() => {
-             if (overlayContentRef.current) overlayContentRef.current.innerHTML = "";
-        }, 500);
-      }, 100);
-    }, 800);
-  };
-
   return (
     <motion.section
-      ref={heroCardRef}
-      className="min-h-[90vh] h-auto w-[90%] mx-auto rounded-[40px] flex flex-col overflow-y-auto relative mt-8 pb-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-      style={{
-        ...{
-          backgroundImage: "url(/blueBG.svg)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed",
-          backgroundColor: "#d3f1ff",
-        },
-        willChange: "transform, opacity",
-      }}
+      className="min-h-[90vh] w-[90%] mx-auto rounded-[40px] flex flex-col relative mt-4 overflow-hidden bg-background border-2 border-border shadow-xl perspective-1000"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8 }}
     >
-      {/* DROPLET TRANSITION OVERLAY (Scoped to Card) */}
-      <motion.div
-        initial={false}
-        animate={transition.isActive ? "active" : "inactive"}
-        variants={{
-            active: { 
-                clipPath: `circle(150% at ${transition.x}px ${transition.y}px)`,
-                opacity: 1,
-                transition: { duration: 0.8, ease: [0.4, 0, 0.2, 1] }
-            },
-            inactive: { 
-                clipPath: `circle(0% at ${transition.x}px ${transition.y}px)`,
-                opacity: 0,
-                transition: { duration: 0.5, ease: "easeIn" }
-            }
-        }}
-        className="absolute inset-0 z-[50] pointer-events-none overflow-hidden bg-white rounded-[40px]"
-      >
-        <div ref={overlayContentRef} className="w-full h-full" />
-      </motion.div>
+      {/* Background Grid Pattern */}
+      <div className="absolute inset-0 z-0 opacity-[0.1]" 
+           style={{ 
+             backgroundImage: "radial-gradient(#333 1px, transparent 1px)", 
+             backgroundSize: "24px 24px" 
+           }} 
+      />
 
-      {/* HEADER */}
-      <motion.header
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative z-10 w-full px-6 md:px-10 lg:px-20 flex items-center justify-between h-16 font-poppins shrink-0"
-        style={{ backgroundColor: "#d1f3ff", borderRadius: "0 0 24px 24px" }}
-      >
-        <h1 className="text-xl font-bold text-gray-900">VinOpera</h1>
+      {/* Gradient Blobs */}
+      <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-orange-900/20 rounded-full blur-3xl pointer-events-none" />
 
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-700">
-          <button 
-            onClick={(e) => handleNavigation('explore', e)}
-            className="hover:text-black transition"
-          >
-            Explore
-          </button>
-          <button 
-            onClick={(e) => handleNavigation('features', e)}
-            className="hover:text-black transition"
-          >
-            Features
-          </button>
-          <button 
-            onClick={(e) => handleNavigation('pricing', e)}
-            className="hover:text-black transition"
-          >
-            Pricing
-          </button>
-          <button className="px-5 py-1.5 rounded-full bg-blue-600 text-white shadow-md hover:bg-blue-700 transition">
+      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-6 md:px-10 lg:px-20 py-20 text-center">
+        
+        {/* Floating Cursors */}
+        <div className="absolute inset-0 pointer-events-none max-w-5xl mx-auto">
+             <FloatingCursor name="Sarah" color="#FF5722" x="10%" y="20%" initialX={-50} initialY={-50} delay={0.5} />
+             <FloatingCursor name="Mike" color="#2196F3" x="85%" y="40%" initialX={50} initialY={0} delay={1.2} />
+             <FloatingCursor name="Alex" color="#4CAF50" x="15%" y="75%" initialX={-50} initialY={50} delay={0.8} />
+        </div>
+
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mb-8"
+        >
+          <span className="px-5 py-2 rounded-full bg-primary/10 text-primary text-sm font-bold border border-primary/20 shadow-sm">
+            vinkura 2.0 is here
+          </span>
+        </motion.div>
+
+        <motion.h1 
+          className="text-6xl md:text-8xl lg:text-9xl font-bold text-white font-ramabhadra tracking-tight mb-8 leading-[0.9]"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
+          The Canvas <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">
+            That Breathes.
+          </span>
+        </motion.h1>
+
+        <motion.p 
+          className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto mb-12 leading-relaxed font-medium"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
+          A freeform digital space to type, sketch, and drop visuals freely. 
+          No rigid structure, just pure flow.
+        </motion.p>
+
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="flex flex-col sm:flex-row gap-5 relative"
+        >
+          <div className="absolute -left-32 -top-16 hidden lg:block">
+            <svg width="120" height="80" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="transform rotate-12 text-gray-500 opacity-60">
+               <path d="M10 10 C 30 40, 60 40, 100 60" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeDasharray="5 5" />
+               <path d="M90 50 L 100 60 L 80 70" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+               <text x="0" y="0" className="text-sm fill-current font-handwriting" style={{ transform: "translate(0, -10px)" }}>start here!</text>
+            </svg>
+          </div>
+
+          <button className="px-10 py-4 rounded-full bg-primary text-white font-bold text-lg hover:bg-orange-600 transition-all shadow-lg hover:shadow-primary/30 hover:-translate-y-1">
             Start Creating
           </button>
-        </nav>
-        
-        {/* Mobile Menu Button Placeholder */}
-        <button className="md:hidden text-gray-700">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-            </svg>
-        </button>
-      </motion.header>
-
-      {/* TITLE CARD + MOCKUP WRAPPER (Full width flex) */}
-      <div className="relative z-10 w-full mx-auto mt-6 lg:mt-8 flex flex-col lg:flex-row gap-6 lg:gap-8 px-6 md:px-10 lg:px-20 shrink-0">
-        
-        {/* TITLE CARD (80% width on desktop) */}
-        <div className="w-full lg:w-[80%]">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-          >
-            <motion.div
-              animate={floatAnimation(0)}
-              className="rounded-[36px] p-6 shadow-md"
-              style={{
-                background:
-                  "linear-gradient(135deg, #b8eaff 0%, #c3efff 50%, #d4f5ff 100%)",
-              }}
-            >
-              {/* TOP SECTION: TITLE + VINKURA BADGE */}
-              <div className="flex flex-col sm:flex-row items-start justify-between pl-2 sm:pl-6 pr-2 sm:pr-6 mb-4">
-                <h1 className="text-[40px] sm:text-[60px] lg:text-[80px] font-ramabhadra text-black leading-none">
-                  VinOpera
-                </h1>
-                <div
-                  className="px-4 py-1 rounded-full text-lg sm:text-xl text-center font-semibold mt-2 sm:mt-2"
-                  style={{
-                    border: "1.5px solid #000",
-                  }}
-                >
-                  vinkura
-                </div>
-              </div>
-
-              {/* BOTTOM SECTION: DESCRIPTION + WHAT WE PROVIDE */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pl-2 sm:pl-6 pr-2 sm:pr-6 mt-4 sm:mt-6 gap-4 sm:gap-0">
-                <p className="text-lg sm:text-xl text-gray-800">
-                  The canvas which breathes with you.
-                </p>
-                <div
-                  className="w-fit px-5 py-2 rounded-full font-semibold text-sm"
-                  style={{ background: "#91e2ff", border: "1px solid rgba(0,0,0,0.15)" }}
-                >
-                  what we provide.
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        </div>
-
-        {/* MOCKUP SECTION (20% width on desktop) */}
-        <div className="w-full lg:w-[20%] flex items-start">
-          <motion.div
-            initial={{ x: 50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
-            className="w-full"
-          >
-            <motion.div
-              animate={floatAnimation(0.5)}
-              className="rounded-[36px] w-full overflow-hidden h-[150px]"
-            >
-              <img src="/lumeerlg.png" alt="Mockup" className="w-full h-full object-cover" />
-            </motion.div>
-          </motion.div>
-        </div>
-
+          <button className="px-10 py-4 rounded-full bg-white text-black font-bold text-lg border-2 border-white hover:bg-gray-200 transition-all hover:border-gray-200">
+            View Demo
+          </button>
+        </motion.div>
       </div>
 
-
-      {/* MAIN GRID BELOW TITLE */}
-      <div className="relative z-10 w-full px-6 md:px-10 lg:px-20 flex-1 flex flex-col justify-end pb-10 lg:pb-12 mt-6 lg:mt-10 min-h-0">
-        <div className="w-full grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-[80fr_20fr] gap-6 lg:gap-10 h-auto lg:h-full">
-
-          {/* LEFT MOCKUP */}
-          <motion.div
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.6 }}
-            className="lg:row-span-2 h-[300px] lg:h-full"
-          >
-            <motion.div
-              animate={floatAnimation(1)}
-              className="rounded-[32px] bg-white p-4 shadow-xl h-full"
+      {/* Canvas Mockup Showcase with 3D Tilt */}
+      <motion.div 
+        className="relative z-10 w-full h-[450px] md:h-[600px] mt-auto overflow-hidden flex justify-center"
+        initial={{ y: 100, opacity: 0, rotateX: 20 }}
+        animate={{ y: 0, opacity: 1, rotateX: 0 }}
+        transition={{ duration: 1, delay: 0.6, type: "spring", bounce: 0.2 }}
+        style={{ perspective: "1000px" }}
+      >
+        <motion.div 
+          className="w-[95%] md:w-[85%] h-full bg-card rounded-t-[40px] border-t-2 border-x-2 border-border shadow-2xl p-4 md:p-8 relative"
+          whileHover={{ y: -10, rotateX: 5 }}
+          transition={{ duration: 0.4 }}
+        >
+           {/* Mockup UI Header */}
+           <div className="flex items-center justify-between mb-8 border-b border-gray-200 pb-6">
+            <div className="flex gap-3">
+              <div className="w-3.5 h-3.5 rounded-full bg-[#FF5F57] border border-[#E0443E]" />
+              <div className="w-3.5 h-3.5 rounded-full bg-[#FEBC2E] border border-[#D89E24]" />
+              <div className="w-3.5 h-3.5 rounded-full bg-[#28C840] border border-[#1AAB29]" />
+            </div>
+            <div className="h-3 w-48 bg-gray-200 rounded-full" />
+            <div className="w-8 h-8 rounded-full bg-gray-200" />
+          </div>
+          
+          {/* Mockup Content - Floating Cards inside Canvas */}
+          <div className="relative w-full h-full">
+            <motion.div 
+              className="absolute top-10 left-10 md:left-20 w-56 h-40 bg-white rounded-2xl shadow-lg p-5 border border-gray-100"
+              animate={{ y: [0, -15, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             >
-              <div className="rounded-[28px] bg-gray-100 h-full relative shadow-inner">
-                <div className="absolute top-3 left-4 flex gap-2">
-                  <span className="h-4 w-4 bg-orange-500 rounded-full" />
-                  <span className="h-2 w-2 bg-gray-300 rounded-full" />
-                  <span className="h-2 w-2 bg-gray-300 rounded-full" />
-                </div>
+              <div className="w-10 h-10 rounded-xl bg-blue-50 mb-4 flex items-center justify-center text-blue-500">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              </div>
+              <div className="h-2.5 w-32 bg-gray-100 rounded-full mb-3" />
+              <div className="h-2.5 w-20 bg-gray-100 rounded-full" />
+            </motion.div>
+
+            <motion.div 
+              className="absolute top-32 right-10 md:right-32 w-64 h-48 bg-white rounded-2xl shadow-lg p-5 border border-gray-100"
+              animate={{ y: [0, -20, 0] }}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            >
+              <div className="flex gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-purple-100 border-2 border-white shadow-sm" />
+                <div className="w-10 h-10 rounded-full bg-pink-100 border-2 border-white shadow-sm -ml-5" />
+                <div className="w-10 h-10 rounded-full bg-yellow-100 border-2 border-white shadow-sm -ml-5 flex items-center justify-center text-xs font-bold text-yellow-600">+3</div>
+              </div>
+              <div className="h-2.5 w-full bg-gray-100 rounded-full mb-3" />
+              <div className="h-2.5 w-4/5 bg-gray-100 rounded-full mb-3" />
+              <div className="h-2.5 w-3/5 bg-gray-100 rounded-full" />
+            </motion.div>
+
+             <motion.div 
+              className="absolute bottom-32 left-1/2 -translate-x-1/2 w-48 h-48 bg-white rounded-full shadow-xl flex items-center justify-center border border-gray-100"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            >
+              <div className="text-center">
+                <span className="block text-3xl font-bold text-primary mb-1">∞</span>
+                <span className="text-sm font-semibold text-gray-500">Infinite Canvas</span>
               </div>
             </motion.div>
-          </motion.div>
-
-          {/* INFINITY CANVAS CARD */}
-          <motion.div
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.7 }}
-            className="h-[300px] lg:h-full"
-          >
-            <motion.div
-              animate={floatAnimation(1.5)}
-              className="rounded-[32px] p-6 shadow-md h-full flex flex-col justify-between"
-              style={{
-                background: "linear-gradient(to bottom, #d3f1ff 0%, #d3f1ff 55%, #9ad7ff 100%)",
-              }}
-            >
-              <div>
-                <h2 className="text-3xl font-bold text-black mb-3">The infinity canvas</h2>
-                <p className="text-md font-medium text-gray-900 leading-relaxed">
-                  Do things at your own pace. Life&apos;s not a race.
-                  Breathe. You&apos;re always there.
-                </p>
-              </div>
-
-              <button className="px-8 py-2 bg-white rounded-full shadow font-semibold self-start hover:scale-105 transition">
-                explore
-              </button>
-            </motion.div>
-          </motion.div>
-
-          {/* BOTTOM RIGHT CARD (ALIGNED UNDER RIGHT COLUMN) */}
-          <motion.div
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.8 }}
-            className="lg:col-start-2 h-auto lg:h-full"
-          >
-            <motion.div
-              animate={floatAnimation(2)}
-              className="rounded-[28px] bg-white p-6 shadow-md h-full flex items-center"
-            >
-              <p className="text-md text-gray-900 leading-relaxed">
-                A freeform digital space to type, sketch, and drop visuals freely — no rigid
-                structure, just pure flow. Every idea you have, big or small, your creativity
-                takes its natural shape.
-              </p>
-            </motion.div>
-          </motion.div>
-        </div>
-      </div>
+          </div>
+        </motion.div>
+      </motion.div>
     </motion.section>
   );
 }
+
