@@ -38,7 +38,7 @@ export default function Hero() {
           className="mb-8"
         >
           <span className="px-5 py-2 rounded-full bg-primary/10 text-primary text-sm font-bold border border-primary/20 shadow-sm">
-            vinkura 2.0 is here
+            An Infinite Worktable
           </span>
         </motion.div>
 
